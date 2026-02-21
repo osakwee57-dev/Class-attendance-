@@ -208,16 +208,22 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
   };
 
   const handleLevelChange = async (newLevel: string) => {
-    const { error } = await supabase
-      .from('users')
-      .update({ level: newLevel })
-      .eq('matric_number', user.matric_number);
+    try {
+      // 1. Update the database
+      const { error } = await supabase
+        .from('users')
+        .update({ level: newLevel })
+        .eq('matric_number', user.matric_number);
 
-    if (!error) {
-      setUser({ ...user, level: newLevel });
-      alert(`Profile updated to ${newLevel}`);
-    } else {
-      alert("Error updating level: " + error.message);
+      if (error) throw error;
+
+      // 2. Update the local state immediately so the UI reflects the change
+      setUser({ ...user, level: newLevel }); 
+      alert(`Success! You are now managing ${newLevel} attendance.`);
+
+    } catch (error) {
+      console.error("Update failed:", error);
+      alert("Error updating level: Check your internet connection or login again.");
     }
   };
 
