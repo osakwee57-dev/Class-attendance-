@@ -1,0 +1,5 @@
+{
+  "name": "Engineering Student Portal",
+  "description": "A portal for engineering students to register, login, and manage attendance with signature verification.",
+  "requestFramePermissions": []
+}
