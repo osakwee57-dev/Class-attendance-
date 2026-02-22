@@ -72,10 +72,10 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
     if (!courseCode) return alert("Enter Course Code");
     
     setLoading(true);
-    // Generate random 6-digit PIN
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const { data: session, error } = await supabase
+    // 1. Create the session
+    const { data: session } = await supabase
       .from('sessions')
       .insert([{ 
         course_code: courseCode.toUpperCase(), 
@@ -87,18 +87,30 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
       .select().single();
 
     if (session) {
-      // AUTO-ADD HOC: Ensures you are #1 on the list
-      await supabase.from('attendance_logs').insert([{
-        session_id: session.id,
-        student_matric: user.matric_number,
-        signature_data: user.signature_data
-      }]);
+      // 2. Find ALL HOCs in your Dept and Level
+      const { data: allHocs } = await supabase
+        .from('users')
+        .select('*')
+        .eq('is_hoc', true)
+        .eq('department', user.department)
+        .eq('level', user.level);
+
+      // 3. Automatically add all found HOCs to the attendance log
+      if (allHocs) {
+        const logsToInsert = allHocs.map(h => ({
+          session_id: session.id,
+          student_matric: h.matric_number,
+          signature_data: h.signature_data
+        }));
+        
+        await supabase.from('attendance_logs').insert(logsToInsert);
+      }
       
       setActiveSession(session);
       setIsStopped(false);
       setCourseCode('');
     } else {
-      alert("Error starting session: " + error?.message);
+      alert("Error starting session. Please try again.");
     }
     setLoading(false);
   };

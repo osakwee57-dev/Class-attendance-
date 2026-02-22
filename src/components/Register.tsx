@@ -9,10 +9,15 @@ interface RegisterProps {
 
 const Register = ({ setView }: RegisterProps) => {
   const [formData, setFormData] = useState({
-    matric: '', name: '', dept: '', level: '100L', password: '', secretCode: ''
+    matric: '', name: '', department: '', level: '100L', password: '', secretCode: ''
   });
   const [loading, setLoading] = useState(false);
   const sigPad = useRef<SignaturePad>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,15 +29,15 @@ const Register = ({ setView }: RegisterProps) => {
     // Check if the user is trying to be an HOC
     const isHocAttempt = formData.secretCode.trim().toUpperCase() === "ACCESS";
 
-    const { error } = await supabase.from('users').insert([{
-      matric_number: formData.matric.toUpperCase().trim(),
-      full_name: formData.name,
-      department: formData.dept,
-      level: formData.level,
-      password: formData.password,
-      signature_data: signature,
-      is_hoc: isHocAttempt
-    }]);
+      const { error } = await supabase.from('users').insert([{
+        matric_number: formData.matric.toUpperCase().trim(),
+        full_name: formData.name,
+        department: formData.department,
+        level: formData.level,
+        password: formData.password,
+        signature_data: signature,
+        is_hoc: isHocAttempt
+      }]);
 
     setLoading(false);
 
@@ -50,57 +55,76 @@ const Register = ({ setView }: RegisterProps) => {
       <form onSubmit={handleRegister}>
         <input 
           className="input-field"
+          name="matric"
           placeholder="Matric Number (e.g. ENG/20/001)" 
           required 
-          onChange={e => setFormData({...formData, matric: e.target.value})} 
+          value={formData.matric}
+          onChange={handleInputChange} 
         />
         <input 
           className="input-field"
+          name="name"
           placeholder="Full Name" 
           required 
-          onChange={e => setFormData({...formData, name: e.target.value})} 
+          value={formData.name}
+          onChange={handleInputChange} 
         />
         <input 
           className="input-field"
+          name="password"
           type="password"
           placeholder="Create Password" 
           required 
-          onChange={e => setFormData({...formData, password: e.target.value})} 
+          value={formData.password}
+          onChange={handleInputChange} 
         />
         
-        <select 
-          className="input-field"
-          required 
-          onChange={e => setFormData({...formData, dept: e.target.value})}
-        >
-          <option value="">-- Select Department --</option>
-          <option value="Mechanical Engineering">Mechanical Engineering</option>
-          <option value="Electrical & Electronics Engineering">Electrical & Electronics Engineering</option>
-          <option value="Civil Engineering">Civil Engineering</option>
-          <option value="Computer Engineering">Computer Engineering</option>
-          <option value="Chemical Engineering">Chemical Engineering</option>
-          <option value="Petroleum Engineering">Petroleum Engineering</option>
-          <option value="Mechatronics Engineering">Mechatronics Engineering</option>
-        </select>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-slate-600 mb-1">Select Department</label>
+          <select 
+            className="input-field"
+            name="department" 
+            value={formData.department} 
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">-- Select Department --</option>
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Electrical & Electronics Engineering">Electrical & Electronics Engineering</option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Computer Engineering">Computer Engineering</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Petroleum Engineering">Petroleum Engineering</option>
+            <option value="Mechatronics Engineering">Mechatronics Engineering</option>
+            <option value="Agricultural Engineering">Agricultural Engineering</option>
+          </select>
+        </div>
 
-        <select 
-          className="input-field"
-          onChange={e => setFormData({...formData, level: e.target.value})}
-        >
-          <option value="100L">100 Level</option>
-          <option value="200L">200 Level</option>
-          <option value="300L">300 Level</option>
-          <option value="400L">400 Level</option>
-          <option value="500L">500 Level</option>
-        </select>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-slate-600 mb-1">Select Level</label>
+          <select 
+            className="input-field"
+            name="level"
+            value={formData.level}
+            onChange={handleInputChange}
+          >
+            <option value="100L">100 Level</option>
+            <option value="200L">200 Level</option>
+            <option value="300L">300 Level</option>
+            <option value="400L">400 Level</option>
+            <option value="500L">500 Level</option>
+          </select>
+        </div>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-slate-600 mb-1">HOC Secret Code (Optional)</label>
           <input 
             className="input-field border-amber-300 focus:ring-amber-500 focus:border-amber-500"
+            name="secretCode"
             placeholder="Enter code for HOC access" 
             type="password"
-            onChange={e => setFormData({...formData, secretCode: e.target.value})} 
+            value={formData.secretCode}
+            onChange={handleInputChange} 
           />
         </div>
 
