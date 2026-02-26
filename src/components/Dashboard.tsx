@@ -82,6 +82,7 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
         passcode: pin, 
         hoc_matric: user.matric_number, 
         target_level: user.level,
+        department: user.department,
         is_active: true 
       }])
       .select().single();
