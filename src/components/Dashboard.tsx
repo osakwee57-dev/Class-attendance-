@@ -172,10 +172,10 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
     if (!pin || pin.length !== 6) return alert("Please enter a valid 6-digit PIN");
     
     setLoading(true);
-    // 1. Fetch the session and its target level
+    // 1. Fetch the session and its target level/department
     const { data: session, error } = await supabase
       .from('sessions')
-      .select('id, target_level, is_active')
+      .select('id, target_level, department, is_active')
       .eq('passcode', pin)
       .eq('is_active', true)
       .maybeSingle();
@@ -185,10 +185,18 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
       return alert("Invalid PIN or Session Inactive");
     }
 
-    // 2. LEVEL CHECK: Does the student level match the HOC's session level?
-    if (session.target_level !== user.level) {
+    // 2. STRICT VALIDATION: Does the student level and department match the session?
+    const isLevelMatch = user.level === session.target_level;
+    const isDeptMatch = user.department === session.department;
+
+    if (!isLevelMatch) {
       setLoading(false);
       return alert(`Access Denied! This session is only for ${session.target_level} students.`);
+    }
+
+    if (!isDeptMatch) {
+      setLoading(false);
+      return alert(`Access Denied! This session is for ${session.department} students. You are in ${user.department}.`);
     }
 
     // 3. DUPLICATE CHECK: Has the student already signed?
@@ -204,7 +212,7 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
       return alert("You have already signed for this class!");
     }
 
-    // 4. Proceed to sign attendance if level matches...
+    // 4. Proceed to sign attendance
     const { error: logError } = await supabase.from('attendance_logs').insert([{
       session_id: session.id,
       student_matric: user.matric_number,
