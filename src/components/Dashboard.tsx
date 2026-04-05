@@ -45,6 +45,74 @@ const StudentSignSkeleton = () => {
   );
 };
 
+const LiveSessionSkeleton = () => {
+  return (
+    <div className="p-6 space-y-8 animate-pulse">
+      {/* Header: Course Title & Code */}
+      <div className="space-y-2">
+        <div className="h-8 w-64 bg-gray-200 rounded-md skeleton"></div>
+        <div className="h-4 w-32 bg-gray-100 rounded-md skeleton"></div>
+      </div>
+
+      {/* The "Big PIN" Card */}
+      <div className="bg-gray-50 p-8 rounded-2xl flex flex-col items-center border border-dashed border-gray-200">
+        <div className="h-4 w-24 bg-gray-200 rounded mb-4 skeleton"></div>
+        <div className="h-16 w-48 bg-gray-300 rounded-lg skeleton"></div>
+      </div>
+
+      {/* Attendance Stats Row */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="h-24 bg-gray-100 rounded-xl skeleton"></div>
+        <div className="h-24 bg-gray-100 rounded-xl skeleton"></div>
+      </div>
+
+      {/* The Pie Chart / Progress Circle Space */}
+      <div className="flex flex-col items-center justify-center py-10">
+        <div className="w-48 h-48 rounded-full border-8 border-gray-100 flex items-center justify-center skeleton">
+          <div className="h-8 w-16 bg-gray-200 rounded skeleton"></div>
+        </div>
+        <div className="mt-6 h-4 w-40 bg-gray-100 rounded skeleton"></div>
+      </div>
+
+      {/* Action Button (End Session) */}
+      <div className="h-14 w-full bg-red-50 rounded-xl skeleton"></div>
+    </div>
+  );
+};
+
+const StudentRowSkeleton = () => (
+  <div className="flex items-center gap-4 p-4 border-b border-gray-50 animate-pulse">
+    {/* Avatar Shimmer */}
+    <div className="w-12 h-12 rounded-full bg-gray-200 skeleton shrink-0"></div>
+    
+    <div className="flex-1 space-y-2">
+      {/* Student Name Shimmer */}
+      <div className="h-4 w-3/4 bg-gray-200 rounded skeleton"></div>
+      {/* Matric Number Shimmer */}
+      <div className="h-3 w-1/2 bg-gray-100 rounded skeleton"></div>
+    </div>
+
+    {/* Optional "Status" or "Chevron" Shimmer */}
+    <div className="w-6 h-6 rounded bg-gray-100 skeleton"></div>
+  </div>
+);
+
+const DirectorySkeleton = () => {
+  return (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Search Bar Placeholder */}
+      <div className="p-4 bg-gray-50">
+        <div className="h-10 w-full bg-gray-200 rounded-lg skeleton"></div>
+      </div>
+      
+      {/* List of Student Skeletons */}
+      {[...Array(8)].map((_, i) => (
+        <StudentRowSkeleton key={i} />
+      ))}
+    </div>
+  );
+};
+
 interface DashboardProps {
   user: User;
   setView: (view: View) => void;
@@ -59,6 +127,7 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
   const [isStopped, setIsStopped] = useState(true);
   const [attendees, setAttendees] = useState<{name: string, matric: string, sig: string}[]>([]);
   const [pin, setPin] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (user.is_hoc) {
@@ -289,7 +358,7 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
   };
 
   const fetchStudents = async () => {
-    setLoading(true);
+    setIsRefreshing(true);
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -298,7 +367,7 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
       .order('full_name', { ascending: true });
     
     if (data) setStudents(data);
-    setLoading(false);
+    setIsRefreshing(false);
   };
 
   const handleLogout = () => {
@@ -539,10 +608,8 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
                     </button>
                   </div>
 
-                  {loading ? (
-                    <div className="flex justify-center py-10">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                    </div>
+                  {isRefreshing ? (
+                    <DirectorySkeleton />
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
