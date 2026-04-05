@@ -5,6 +5,46 @@ import { LogOut, User as UserIcon, BookOpen, CheckCircle, Users, FileText, Play,
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+const HOCDashboardSkeleton = () => {
+  return (
+    <div className="hoc-skeleton-container space-y-6">
+      {/* Skeleton for the Session Title */}
+      <div className="skeleton w-3/5 h-8 mb-4"></div>
+      
+      {/* Skeleton for the Active PIN Card */}
+      <div className="skeleton w-full h-32 rounded-2xl mb-6"></div>
+      
+      {/* Skeleton for the Circular Progress/Pie Chart */}
+      <div className="flex justify-center my-8">
+        <div className="skeleton w-40 h-40 rounded-full"></div>
+      </div>
+
+      {/* Skeleton for the "End Session" Button */}
+      <div className="skeleton w-full h-12 rounded-xl"></div>
+    </div>
+  );
+};
+
+const StudentSignSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Input Field Skeleton */}
+      <div className="skeleton w-full h-14 rounded-xl"></div>
+      
+      {/* Verify Button Skeleton */}
+      <div className="skeleton w-full h-12 rounded-xl"></div>
+      
+      {/* Recent History List Skeletons */}
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex justify-between items-center py-2">
+          <div className="skeleton w-2/5 h-4"></div>
+          <div className="skeleton w-1/5 h-4"></div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 interface DashboardProps {
   user: User;
   setView: (view: View) => void;
@@ -267,7 +307,7 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 fade-in">
       {/* Sidebar/Header */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div className="flex items-center gap-2">
@@ -359,7 +399,9 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
                     <h3 className="text-lg font-bold text-slate-800">Attendance Session</h3>
                   </div>
 
-                  {!activeSession ? (
+                  {loading && !activeSession ? (
+                    <HOCDashboardSkeleton />
+                  ) : !activeSession ? (
                     <div className="flex flex-col sm:flex-row gap-3">
                       <input 
                         type="text"
@@ -550,26 +592,32 @@ const Dashboard = ({ user, setView, setUser }: DashboardProps) => {
                     <h3 className="text-lg font-bold text-slate-800">Sign Attendance</h3>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input 
-                      type="text"
-                      maxLength={6}
-                      placeholder="Enter 6-digit PIN"
-                      className="input-field mb-0 flex-1 text-center tracking-[0.5em] font-mono font-bold text-xl"
-                      value={pin}
-                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                    />
-                    <button 
-                      onClick={joinSession}
-                      disabled={loading || pin.length < 6}
-                      className="bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {loading ? 'Signing...' : 'Sign Now'}
-                    </button>
-                  </div>
-                  <p className="mt-3 text-[10px] text-slate-400 text-center uppercase font-bold tracking-widest">
-                    Ask your HOC for the session PIN
-                  </p>
+                  {loading ? (
+                    <StudentSignSkeleton />
+                  ) : (
+                    <>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <input 
+                          type="text"
+                          maxLength={6}
+                          placeholder="Enter 6-digit PIN"
+                          className="input-field mb-0 flex-1 text-center tracking-[0.5em] font-mono font-bold text-xl"
+                          value={pin}
+                          onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                        />
+                        <button 
+                          onClick={joinSession}
+                          disabled={loading || pin.length < 6}
+                          className="bg-indigo-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {loading ? 'Signing...' : 'Sign Now'}
+                        </button>
+                      </div>
+                      <p className="mt-3 text-[10px] text-slate-400 text-center uppercase font-bold tracking-widest">
+                        Ask your HOC for the session PIN
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <div className="bg-indigo-600 rounded-2xl p-8 text-white relative overflow-hidden">
